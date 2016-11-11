@@ -4,7 +4,23 @@
 #define DOWN (1)
 
 PwmOut PWM1(P2_0);
-DigitalOut test(P0_8);
+
+DigitalIn buttonUp1(P0_8);
+DigitalIn buttonUp2(P0_9);
+DigitalIn buttonDown2(P0_7);
+DigitalIn buttonDown3(P0_6);
+
+DigitalIn optoSensor(P0_18);
+
+DigitalIn KeyPadRow1(P0_25);
+DigitalIn KeyPadRow2(P0_26);
+DigitalIn KeyPadRow3(P0_2);
+DigitalIn KeyPadRow4(P0_3);
+DigitalIn KeyPadCol1(P0_21);
+DigitalIn KeyPadCol1(P0_22);
+DigitalIn KeyPadCol1(P0_27);
+DigitalIn KeyPadCol1(P0_28);
+
 InterruptIn button(P0_22);
 InterruptIn button2(P0_27);
 bool isElevatorOn = false;
@@ -92,25 +108,25 @@ void optoSensorInterrupt(){
 	distanceCount++;
 }
 
-void buttonUpLevelOne(){
+void buttonUp1Interrupt(){
 	callElevator(1);
 	addStop(1, UP);
 	request[0][0] = true;
 }
 
-void buttonUpLevelTwo(){
+void buttonUp2Interrupt(){
 	callElevator(2);
 	addStop(2, UP);
 	request[2][0] = true;
 }
 
-void buttonDownLevelTwo(){
+void buttonDown2Interrupt(){
 	callElevator(2);
 	addStop(2, DOWN);
 	request[2][1] = true;
 }
 
-void buttonDownLevelThree(){
+void buttonDown3Interrupt(){
 	callElevator(3);
 	addStop(3, DOWN);
 	request[3][1] = true;
@@ -118,8 +134,11 @@ void buttonDownLevelThree(){
 
 int main() {
 	PWM1.period(0.010);
-	button.fall(&buttonUpLevelOne);
-	button2.fall(&optoSensorInterrupt);
+	optoSensor.fall(&optoSensorInterrupt);
+	buttonUp1.fall(&buttonUp1Interrupt);
+	buttonUp2.fall(&buttonUp2Interrupt);
+	buttonDown2.fall(&buttonDown2Interrupt);
+	buttonDown3.fall(&buttonDown3Interrupt);
 	while(1){
 
 	}
