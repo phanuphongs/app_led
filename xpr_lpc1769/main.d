@@ -66,7 +66,15 @@ main.o main.d: ../main.cpp \
  /Users/patricksuphalawut/Downloads/mbed_LXpresso/mbed/libraries/mbed/capi/gpio_irq_api.h \
  /Users/patricksuphalawut/Downloads/mbed_LXpresso/mbed/libraries/mbed/capi/wait_api.h \
  /Users/patricksuphalawut/Downloads/mbed_LXpresso/mbed/libraries/mbed/capi/sleep_api.h \
- /Users/patricksuphalawut/Downloads/mbed_LXpresso/mbed/libraries/mbed/capi/rtc_time.h
+ /Users/patricksuphalawut/Downloads/mbed_LXpresso/mbed/libraries/mbed/capi/rtc_time.h \
+ /Users/patricksuphalawut/Downloads/mbed_LXpresso/mbed/libraries/mbed/cpp/SPI_TFT_ILI9341.h \
+ /Users/patricksuphalawut/Downloads/mbed_LXpresso/mbed/libraries/mbed/cpp/mbed.h \
+ /Users/patricksuphalawut/Downloads/mbed_LXpresso/mbed/libraries/mbed/cpp/GraphicsDisplay.h \
+ /Users/patricksuphalawut/Downloads/mbed_LXpresso/mbed/libraries/mbed/cpp/TextDisplay.h \
+ /Users/patricksuphalawut/Downloads/mbed_LXpresso/mbed/libraries/mbed/cpp/Arial12x12.h \
+ /Users/patricksuphalawut/Downloads/mbed_LXpresso/mbed/libraries/mbed/cpp/Arial24x23.h \
+ /Users/patricksuphalawut/Downloads/mbed_LXpresso/mbed/libraries/mbed/cpp/Arial28x28.h \
+ /Users/patricksuphalawut/Downloads/mbed_LXpresso/mbed/libraries/mbed/cpp/font_big.h
 
 /Users/patricksuphalawut/Downloads/mbed_LXpresso/mbed/libraries/mbed/cpp/mbed.h:
 
@@ -203,3 +211,19 @@ main.o main.d: ../main.cpp \
 /Users/patricksuphalawut/Downloads/mbed_LXpresso/mbed/libraries/mbed/capi/sleep_api.h:
 
 /Users/patricksuphalawut/Downloads/mbed_LXpresso/mbed/libraries/mbed/capi/rtc_time.h:
+
+/Users/patricksuphalawut/Downloads/mbed_LXpresso/mbed/libraries/mbed/cpp/SPI_TFT_ILI9341.h:
+
+/Users/patricksuphalawut/Downloads/mbed_LXpresso/mbed/libraries/mbed/cpp/mbed.h:
+
+/Users/patricksuphalawut/Downloads/mbed_LXpresso/mbed/libraries/mbed/cpp/GraphicsDisplay.h:
+
+/Users/patricksuphalawut/Downloads/mbed_LXpresso/mbed/libraries/mbed/cpp/TextDisplay.h:
+
+/Users/patricksuphalawut/Downloads/mbed_LXpresso/mbed/libraries/mbed/cpp/Arial12x12.h:
+
+/Users/patricksuphalawut/Downloads/mbed_LXpresso/mbed/libraries/mbed/cpp/Arial24x23.h:
+
+/Users/patricksuphalawut/Downloads/mbed_LXpresso/mbed/libraries/mbed/cpp/Arial28x28.h:
+
+/Users/patricksuphalawut/Downloads/mbed_LXpresso/mbed/libraries/mbed/cpp/font_big.h:
