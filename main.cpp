@@ -16,6 +16,7 @@ InterruptIn buttonUp2(P0_17);
 InterruptIn buttonDown2(P0_3);
 InterruptIn buttonDown3(P0_18);
 
+InterruptIn opto(P0_15);
 
 InterruptIn keyPadCol1(P0_28);
 InterruptIn keyPadCol2(P0_27);
@@ -29,10 +30,12 @@ bool request[3][2] = {{false, false,},
 				{false, false}};
 bool destination[3] = {false, false, false};
 int distanceCount = 1;
-int possibleStop = 0;
-int nonPossibleStop = 0;
+//int possibleStop = 0;
+//int nonPossibleStop = 0;
 bool keyPadInterruptState = false;
 Timer timer;
+int time1 = 3000;
+bool check = false;
 
 int c;
 bool s = true;
@@ -76,43 +79,48 @@ int addCurrentLevel(){
 
 int checkLimitDirection(){
 	if(currentLevel == 3 || currentLevel == 1){
-		possibleStop += nonPossibleStop;
-		nonPossibleStop = 0;
 		return currentDirection ? UP : DOWN;
 	}
 	return currentDirection;
 }
 
-void addStop(int reqLevel){
-	if(reqLevel == currentLevel)
-			return;
-	if(currentDirection == UP & currentLevel+1 <= reqLevel || currentDirection == DOWN & currentLevel-1 >= reqLevel){
-		if(request[reqLevel-1][currentDirection] == false && destination[reqLevel-1] == false)
-			possibleStop++;
-		return;
-	}
-	if(request[reqLevel-1][currentDirection ? 0 : 1] == false && destination[reqLevel-1] == false);
-		nonPossibleStop++;
-}
-
-void addStop(int reqLevel, int direction){
-	if(reqLevel == currentLevel)
-		return;
-	if(direction == currentDirection || reqLevel == 3 || reqLevel == 1 ){
-		if((currentDirection == UP & currentLevel < reqLevel) || (currentDirection == DOWN & currentLevel > reqLevel)){
-			if(request[reqLevel-1][direction] == false && destination[reqLevel-1] == false){
-				possibleStop++;
-				TFT.printf("possible stop\n");
-				c++;
+bool checkPossible(){
+	if(!currentDirection){
+		for(int i = currentLevel; i < 3; i++){
+			if(destination[i]){
+				TFT.printf("up des %d\n", i);
+				return true;
 			}
-			return;
 		}
-	}
-
-	if(request[reqLevel-1][direction ? 0 : 1] == false && destination[reqLevel-1] == false){
-		nonPossibleStop++;
-		TFT.printf("non possible stop\n");
-		c++;
+		for(int i = currentLevel; i < 3; i++){
+			for(int j = 0; j < 2;j++){
+				if(request[i][0]){
+					TFT.printf("down req %d\n", i);
+					return true;
+				}else if(request[i][1]){
+					TFT.printf("down req %d\n", i);
+					return true;
+				}
+			}
+		}
+		return false;
+	}else{
+		for(int i = currentLevel-2; i >= 0; i--){
+			if(destination[i]){
+				TFT.printf("down des %d\n", i);
+				return true;
+			}
+		}
+		for(int i = currentLevel-2; i >= 0; i--){
+			if(request[i][0]){
+				TFT.printf("down req %d\n", i);
+				return true;
+			}else if(request[i][1]){
+				TFT.printf("down req %d\n", i);
+				return true;
+			}
+		}
+		return false;
 	}
 }
 
@@ -128,36 +136,60 @@ void timerInterrupt(){
 		PWM1.pulsewidth_us(0);
 		TFT.printf("stop\n");
 		c++;
-		possibleStop -= 1;
-		if( possibleStop > 0 ){
+		if(checkPossible()){
+			time1 -= 300;
+			timer.start();
+			check = true;
+		}
+	}else if(request[currentLevel-1][currentDirection ? 0:1] == true){
+		if(!checkPossible()){
+			time1 -= 300;
+			request[currentLevel-1][currentDirection ? 0:1] = false;
+			destination[currentLevel-1] = false;
+			PWM1.pulsewidth_us(0);
+			isElevatorOn = false;
+			currentDirection = currentDirection ? 0:1;
+			TFT.printf("current direction:%d",currentDirection);
+		}else{
+			time1 -= 300;
 			timer.start();
 		}
-
 	}else{
-		if(possibleStop != 0)
+		TFT.printf("false\n", currentLevel);
+		if(checkPossible()){
+			time1 -= 300;
 			timer.start();
+		}
 	}
 
 }
 
 void chooseDestination(int level){
 	callElevator(level);
-	addStop(level);
-	destination[level-1] = true;
+	if(currentDirection){
+		if(level < currentLevel){
+			destination[level-1] = true;
+		}
+	}else{
+		if(level > currentLevel){
+			destination[level-1] = true;
+		}
+	}
 }
 
 void requestUp(int level){
 	callElevator(level);
-	addStop(level, UP);
-	request[level-1][0] = true;
+	if(currentLevel != level)
+		request[level-1][0] = true;
+//	addStop(level, UP);
 }
 
 void requestDown(int level){
 	callElevator(level);
-	addStop(level, DOWN);
-	request[level-1][1] = true;
+	if(currentLevel != level)
+		request[level-1][1] = true;
+//	addStop(level, DOWN);
 }
-
 
 void buttonUp1Interrupt(){
 	TFT.printf("level 1 up\n");
@@ -207,6 +239,7 @@ void keyPadCol3Interrupt(){
 
 int main() {
 	PWM1.period(0.010);
+	opto.fall(&timerInterrupt);
 	buttonUp1.fall(&buttonUp1Interrupt);
 	buttonUp2.fall(&buttonUp2Interrupt);
 	buttonDown2.fall(&buttonDown2Interrupt);
@@ -224,26 +257,17 @@ int main() {
 	TFT.locate(0,0);
 
 	while(1){
-		if(c == 19){
-			c = 0;
-			if(s)
-				TFT.foreground(Blue);
-			else
-				TFT.foreground(White);
-		}
-		if(possibleStop < 0)
-			possibleStop = 0;
+		__WFI();
 		if(isElevatorOn){
-//			TFT.printf("%d\n",timer.read_ms());
-			if(timer.read_ms() >= 3000){
+			if(timer.read_ms() >= time1 ){
+				time1 = 3000;
 				timer.stop();
 				timer.reset();
 				timerInterrupt();
 			}
 		}else{
-			if(possibleStop != 0 && timer.read_ms() >= 5000){
-				TFT.printf("continue, possible:%d\n", possibleStop);
-				c++;
+			if(check && timer.read_ms() >= 5000){
+				check = false;
 				timer.stop();
 				timer.reset();
 				elevatorOn();
