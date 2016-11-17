@@ -17,7 +17,9 @@ InterruptIn buttonDown2(P0_3);
 InterruptIn buttonDown3(P0_18);
 
 InterruptIn opto(P2_11);
-
+Serial serial(p13,p14);
+uint8_t uidlist[2][8] = {{51,65,66,65,48,54,51,48},{65,48,51,65,57,49,53,53}};
+int accessLevelList[2] = {2,3};
 InterruptIn keyPadCol1(P0_28);
 InterruptIn keyPadCol2(P0_27);
 InterruptIn keyPadCol3(P0_22);
@@ -232,11 +234,85 @@ void keyPadCol3Interrupt(){
 	}
 }
 
+bool validateKey(uint8_t *uid);
+bool isUidComplete(uint8_t *uid);
+bool isInRegisteredKey(uint8_t *uid);
+bool isMatch(uint8_t *uid1,uint8_t *uid2);
+int getAccessLevel(uint8_t *uid);
+uint8_t buffer[8];
+int i = 0;
+int access = -1;
+bool validateKey(uint8_t *uid){
+    if(!isUidComplete(uid)){
+        return false;
+    }
+    if(!isInRegisteredKey(uid)){
+        return false;
+    }
+    return true;
+}
+bool isUidComplete(uint8_t *uid){
+    for(int i = 0; i < 8; i++){
+        if(uid[i] == '\0' || uid == 0){
+            return false;
+        }
+    }
+    
+    return true;
+}
+int getAccessLevel(uint8_t *uid){
+    for (int i = 0; i < 2 ;i++){
+        if (isMatch(uid,uidlist[i])){
+            return accessLevelList[i];
+        }
+    }
+    return -1;
+}
+bool isMatch(uint8_t *uid1,uint8_t *uid2){
+    for(int i = 0;i < 8 ; i++){
+        if(uid1[i] != uid2[i]){
+            return false;
+        }
+    }
+    return true;
+}
+bool isInRegisteredKey(uint8_t *uid){
+    for (int i = 0; i < 2 ;i++){
+        if (isMatch(uid,uidlist[i])){
+            return true;
+        }
+    }
+    return false;
+}
 
+void serialCallback(){
+    
+    while(serial.readable()){
+        uint8_t in = serial.getc();
+        buffer[i++] = in;
+        if(i==8)
+            i = 0;
+    }
+    if(i == 8){
+        i = 0;
+        
+    }
+    bool valid = validateKey(buffer);
+    if(valid){
+        access = getAccessLevel(buffer);
+        //led.write(1);
+    }else{
+        //led.write(0);
+    }
+    
+    return;
+}
 
 int main() {
 	PWM1.period(0.010);
 	opto.rise(&timerInterrupt);
+    serial.baud(9600);
+    serial.attach(&serialCallback,Serial::RxIrq);
 	buttonUp1.fall(&buttonUp1Interrupt);
 	buttonUp2.fall(&buttonUp2Interrupt);
 	buttonDown2.fall(&buttonDown2Interrupt);
