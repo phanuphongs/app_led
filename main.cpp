@@ -16,7 +16,7 @@ InterruptIn buttonUp2(P0_17);
 InterruptIn buttonDown2(P0_3);
 InterruptIn buttonDown3(P0_18);
 
-InterruptIn opto(P0_15);
+InterruptIn opto(P2_11);
 
 InterruptIn keyPadCol1(P0_28);
 InterruptIn keyPadCol2(P0_27);
@@ -36,9 +36,10 @@ bool keyPadInterruptState = false;
 Timer timer;
 int time1 = 3000;
 bool check = false;
-
+bool first = true;
 int c;
 bool s = true;
+bool status =false;
 
 SPI_TFT_ILI9341 TFT(p5 , p6, p7, p8, p9, p10, "TFT");
 
@@ -125,6 +126,11 @@ bool checkPossible(){
 }
 
 void timerInterrupt(){
+	if(first){
+		TFT.printf("first\n");
+		first = false;
+		return;
+	}
 	currentLevel = addCurrentLevel();
 	TFT.printf("level: %d in timer interrupt\n", currentLevel);
 	c++;
@@ -136,29 +142,20 @@ void timerInterrupt(){
 		PWM1.pulsewidth_us(0);
 		TFT.printf("stop\n");
 		c++;
+		first = true;
 		if(checkPossible()){
-			time1 -= 300;
 			timer.start();
 			check = true;
 		}
 	}else if(request[currentLevel-1][currentDirection ? 0:1] == true){
 		if(!checkPossible()){
-			time1 -= 300;
 			request[currentLevel-1][currentDirection ? 0:1] = false;
 			destination[currentLevel-1] = false;
 			PWM1.pulsewidth_us(0);
 			isElevatorOn = false;
+			first = true;
 			currentDirection = currentDirection ? 0:1;
-			TFT.printf("current direction:%d",currentDirection);
-		}else{
-			time1 -= 300;
-			timer.start();
-		}
-	}else{
-		TFT.printf("false\n", currentLevel);
-		if(checkPossible()){
-			time1 -= 300;
-			timer.start();
+			TFT.printf("current direction:%d\n",currentDirection);
 		}
 	}
 
@@ -239,7 +236,7 @@ void keyPadCol3Interrupt(){
 
 int main() {
 	PWM1.period(0.010);
-	opto.fall(&timerInterrupt);
+	opto.rise(&timerInterrupt);
 	buttonUp1.fall(&buttonUp1Interrupt);
 	buttonUp2.fall(&buttonUp2Interrupt);
 	buttonDown2.fall(&buttonDown2Interrupt);
@@ -258,14 +255,15 @@ int main() {
 
 	while(1){
 		__WFI();
-		if(isElevatorOn){
-			if(timer.read_ms() >= time1 ){
-				time1 = 3000;
-				timer.stop();
-				timer.reset();
-				timerInterrupt();
-			}
-		}else{
+//		int optoInput = opto.read();
+//		if(optoInput == 1 && !status){
+//			TFT.printf("read\n");
+//			status = true;
+//			timerInterrupt();
+//		}else if(optoInput == 0 && status ){
+//			status = false;
+//		}
+		if(!isElevatorOn){
 			if(check && timer.read_ms() >= 5000){
 				check = false;
 				timer.stop();
